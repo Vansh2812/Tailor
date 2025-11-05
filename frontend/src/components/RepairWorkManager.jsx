@@ -17,11 +17,15 @@ export default function RepairWorkManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWork, setEditingWork] = useState(null);
   const [formData, setFormData] = useState({ name: '', price: '' });
-  const API_URL = 'https://tailor-9pdf.onrender.com/api/repairWorks';
+
+  // ✅ Secure API URL from .env
+  const API_BASE = import.meta.env.VITE_API_BASE
+    ? `${import.meta.env.VITE_API_BASE}/api/repairWorks`
+    : '/api/repairWorks';
 
   const fetchRepairWorks = async () => {
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(API_BASE);
       setRepairWorks(res.data);
     } catch (err) {
       console.error(t('errorFetchingRepairWorks'), err);
@@ -41,11 +45,19 @@ export default function RepairWorkManager() {
 
     try {
       if (editingWork) {
-        const res = await axios.put(`${API_URL}/${editingWork._id}`, { name: formData.name.trim(), price });
-        setRepairWorks(repairWorks.map(work => (work._id === res.data._id ? res.data : work)));
+        const res = await axios.put(`${API_BASE}/${editingWork._id}`, {
+          name: formData.name.trim(),
+          price,
+        });
+        setRepairWorks((prev) =>
+          prev.map((work) => (work._id === res.data._id ? res.data : work))
+        );
       } else {
-        const res = await axios.post(API_URL, { name: formData.name.trim(), price });
-        setRepairWorks([...repairWorks, res.data]);
+        const res = await axios.post(API_BASE, {
+          name: formData.name.trim(),
+          price,
+        });
+        setRepairWorks((prev) => [...prev, res.data]);
       }
       resetForm();
     } catch (err) {
@@ -61,8 +73,8 @@ export default function RepairWorkManager() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      setRepairWorks(repairWorks.filter(work => work._id !== id));
+      await axios.delete(`${API_BASE}/${id}`);
+      setRepairWorks((prev) => prev.filter((work) => work._id !== id));
     } catch (err) {
       console.error(t('errorDeletingRepairWork'), err);
     }
@@ -78,7 +90,9 @@ export default function RepairWorkManager() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">{t('repairWorkManagement')}</h2>
+          <h2 className="text-3xl font-bold text-gray-900">
+            {t('repairWorkManagement')}
+          </h2>
           <p className="text-gray-600">{t('manageRepairServices')}</p>
         </div>
 
@@ -89,10 +103,14 @@ export default function RepairWorkManager() {
               {t('addRepairWork')}
             </Button>
           </DialogTrigger>
+
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingWork ? t('editRepairWork') : t('addNewRepairWork')}</DialogTitle>
+              <DialogTitle>
+                {editingWork ? t('editRepairWork') : t('addNewRepairWork')}
+              </DialogTitle>
             </DialogHeader>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">{t('repairWorkName')}</Label>
@@ -100,7 +118,9 @@ export default function RepairWorkManager() {
                   id="name"
                   placeholder={t('repairWorkPlaceholder')}
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -114,14 +134,20 @@ export default function RepairWorkManager() {
                   min="1"
                   step="0.01"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
                   required
                 />
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button type="submit" className="flex-1">{editingWork ? t('updateWork') : t('addWork')}</Button>
-                <Button type="button" variant="outline" onClick={resetForm}>{t('cancel')}</Button>
+                <Button type="submit" className="flex-1">
+                  {editingWork ? t('updateWork') : t('addWork')}
+                </Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  {t('cancel')}
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -151,13 +177,23 @@ export default function RepairWorkManager() {
                 {repairWorks.map((work) => (
                   <TableRow key={work._id}>
                     <TableCell className="font-medium">{work.name}</TableCell>
-                    <TableCell><Badge variant="secondary">₹{work.price}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">₹{work.price}</Badge>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button size="sm" variant="outline" onClick={() => handleEdit(work)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(work)}
+                        >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleDelete(work._id)}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(work._id)}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
