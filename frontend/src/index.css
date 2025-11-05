@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ----------------------------------------------------- */
+/* RESPONSIVE COMPONENT STYLES                 */
+/* ----------------------------------------------------- */
+
+@layer components {
+  /* Utility for a responsive container/wrapper */
+  .container {
+    /* Base style (mobile first): full width with padding */
+    @apply max-w-full mx-auto px-4 sm:px-6;
+    
+    /* Medium breakpoint (md): increase max width */
+    @apply md:max-w-3xl;
+    
+    /* Large breakpoint (lg): further increase max width */
+    @apply lg:max-w-5xl;
+    
+    /* Extra large breakpoint (xl): max width 7xl */
+    @apply xl:max-w-7xl;
+  }
+
+  /* Style for a Responsive Header/Top Bar */
+  .app-header {
+    /* Mobile: fixed at the top */
+    @apply fixed top-0 left-0 right-0 z-30 bg-card border-b border-border shadow-sm h-16 flex items-center justify-between px-4;
+    
+    /* Desktop: static positioning, wider padding, and potentially a margin if a fixed sidebar is used */
+    /* Note: If you have a fixed 64-unit sidebar, you'd add md:ml-64 here or in the component */
+    @apply md:static md:px-8;
+  }
+
+  /* Style for Responsive Stats Cards Grid */
+  .stats-grid {
+    /* Mobile: single column, large gap */
+    @apply grid grid-cols-1 gap-4;
+
+    /* Tablet/Small Desktop: two columns */
+    @apply sm:grid-cols-2 gap-6;
+
+    /* Large Desktop: four columns */
+    @apply lg:grid-cols-4;
+  }
+}
+
+/* ----------------------------------------------------- */
+/* RESPONSIVE UTILITY OVERRIDES (Optional)     */
+/* ----------------------------------------------------- */
+
+@layer utilities {
+  /* Example: A custom utility to adjust text size responsively */
+  .text-responsive-lg {
+    @apply text-lg; /* Base text size */
+    @apply md:text-xl; /* Larger on medium screens */
+    @apply lg:text-2xl; /* Even larger on large screens */
+  }
+
+  /* Example: A utility to control visibility of elements that shouldn't appear on mobile */
+  .hide-on-mobile {
+    @apply hidden md:block; /* Hidden by default, visible from medium size up */
+  }
+}

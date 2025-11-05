@@ -1,0 +1,266 @@
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { User, Languages, Lock, CheckCircle } from 'lucide-react';
+import '../i18n'; // i18n initialized globally
+
+export default function UserProfile() {
+  const { t, i18n } = useTranslation();
+
+  const [userSettings, setUserSettings] = useState({ language: i18n.language || 'english' });
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+  const [userEmail, setUserEmail] = useState('');
+
+  // Fetch user info from API
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch('/api/auth/all');
+        const data = await res.json();
+        if (data && data.users && data.users.length > 0) {
+          setUserEmail(data.users[0].email);
+          const lang = data.users[0].language || localStorage.getItem('lang') || 'english';
+          setUserSettings({ language: lang });
+          i18n.changeLanguage(lang);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user data:', err);
+        setMessage(t('loadError') || 'Failed to load user data');
+        setMessageType('error');
+      }
+    };
+    fetchUserData();
+  }, [i18n, t]);
+
+  const handleLanguageChange = async (language) => {
+    setUserSettings({ language });
+    i18n.changeLanguage(language);
+    localStorage.setItem('lang', language);
+
+    try {
+      const res = await fetch('/api/auth/update-language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, language })
+      });
+
+      if (!res.ok) throw new Error('Failed to update language');
+
+      setMessage(
+        language === 'english'
+          ? t('languageChangedEn') || 'Language changed to English'
+          : t('languageChangedGu') || 'ભાષા ગુજરાતી કરી દેવાઈ'
+      );
+      setMessageType('success');
+    } catch (err) {
+      console.error(err);
+      setMessage(t('updateLanguageError') || 'Failed to update language');
+      setMessageType('error');
+    }
+
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+
+    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setMessage(t('fillAllFields') || 'Please fill all password fields');
+      setMessageType('error');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setMessage(t('passwordLength') || 'New password must be at least 6 characters long');
+      setMessageType('error');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setMessage(t('passwordMismatch') || 'New passwords do not match');
+      setMessageType('error');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userEmail,
+          oldPassword: passwordForm.oldPassword,
+          newPassword: passwordForm.newPassword
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.message || t('passwordChangeFailed') || 'Password change failed');
+        setMessageType('error');
+        return;
+      }
+
+      setMessage(t('passwordChanged') || 'Password changed successfully');
+      setMessageType('success');
+      setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      console.error(err);
+      setMessage(t('passwordChangeFailed') || 'Password change failed');
+      setMessageType('error');
+    }
+
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900">{t('userProfile') || 'User Profile & Settings'}</h2>
+        <p className="text-gray-600">{t('manageAccount') || 'Manage your account settings and preferences'}</p>
+      </div>
+
+      {message && (
+        <Alert className={messageType === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+          <CheckCircle className={`w-4 h-4 ${messageType === 'success' ? 'text-green-600' : 'text-red-600'}`} />
+          <AlertDescription className={messageType === 'success' ? 'text-green-700' : 'text-red-700'}>
+            {message}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Profile Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              {t('profileInfo') || 'Profile Information'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('emailAddress') || 'Email Address'}</Label>
+              <div className="flex items-center gap-2">
+                <Input value={userEmail} disabled />
+                <Badge variant="secondary">Admin</Badge>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t('accountType') || 'Account Type'}</Label>
+              <Input value={t('administrator') || 'Administrator'} disabled />
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t('lastLogin') || 'Last Login'}</Label>
+              <Input value={new Date().toLocaleDateString()} disabled />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Language Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="w-5 h-5" />
+              {t('languageSettings') || 'Language Settings'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('selectLanguage') || 'Select Language'}</Label>
+              <Select value={userSettings.language} onValueChange={handleLanguageChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="english">{t('english') || 'English'}</SelectItem>
+                  <SelectItem value="gujarati">{t('gujarati') || 'ગુજરાતી'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              <p>
+                {t('currentLanguage') || 'Current Language'}:{' '}
+                <span className="font-medium">
+                  {userSettings.language === 'english'
+                    ? t('english') || 'English'
+                    : t('gujarati') || 'ગુજરાતી'}
+                </span>
+              </p>
+              <p className="mt-2">
+                {userSettings.language === 'english'
+                  ? t('languageInfoEn') || 'Language changes will be applied to the interface.'
+                  : t('languageInfoGu') || 'ભાષા ફેરફારો ઇન્ટરફેસ પર લાગુ થશે.'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Password Change */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="w-5 h-5" />
+            {t('changePassword') || 'Change Password'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+            <div className="space-y-2">
+              <Label htmlFor="oldPassword">{t('currentPassword') || 'Current Password'}</Label>
+              <Input
+                id="oldPassword"
+                type="password"
+                placeholder={t('enterCurrentPassword') || 'Enter current password'}
+                value={passwordForm.oldPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">{t('newPassword') || 'New Password'}</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                placeholder={t('enterNewPassword') || 'Enter new password'}
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">{t('confirmPassword') || 'Confirm New Password'}</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder={t('reEnterPassword') || 'Re-enter new password'}
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+              />
+            </div>
+
+            <Button type="submit" className="w-full md:w-auto">
+              {t('updatePassword') || 'Update Password'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
