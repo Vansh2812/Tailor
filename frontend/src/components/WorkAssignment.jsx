@@ -9,6 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Plus, X, Calendar, User, Store } from 'lucide-react';
 
+// ✅ Secure environment variable for API base
+const API_BASE = import.meta.env.VITE_API_BASE || '';
+
 export default function WorkAssignment() {
   const { t } = useTranslation();
 
@@ -19,35 +22,40 @@ export default function WorkAssignment() {
   const [customerName, setCustomerName] = useState('');
   const [selectedStoreId, setSelectedStoreId] = useState('');
 
-  const API_BASE = 'https://tailor-9pdf.onrender.com/api'; // Backend URL
-
-  // Fetch data from backend
+  // ✅ Fetch data from backend
   useEffect(() => {
-    fetch(`${API_BASE}/repairWorks`)
-      .then(res => res.json())
-      .then(data => setRepairWorks(data))
-      .catch(err => console.error(err));
+    const fetchData = async () => {
+      try {
+        const [repairRes, storeRes, orderRes] = await Promise.all([
+          fetch(`${API_BASE}/api/repairWorks`),
+          fetch(`${API_BASE}/api/stores`),
+          fetch(`${API_BASE}/api/workOrders`),
+        ]);
 
-    fetch(`${API_BASE}/stores`)
-      .then(res => res.json())
-      .then(data => setStores(data))
-      .catch(err => console.error(err));
+        const repairData = await repairRes.json();
+        const storeData = await storeRes.json();
+        const orderData = await orderRes.json();
 
-    fetch(`${API_BASE}/workOrders`)
-      .then(res => res.json())
-      .then(data => setWorkOrders(data))
-      .catch(err => console.error(err));
+        setRepairWorks(repairData);
+        setStores(storeData);
+        setWorkOrders(orderData);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const addRepairWork = (repairWorkId) => {
-    const repairWork = repairWorks.find(rw => rw._id === repairWorkId);
-    if (repairWork && !selectedRepairWorks.find(srw => srw._id === repairWorkId)) {
+    const repairWork = repairWorks.find((rw) => rw._id === repairWorkId);
+    if (repairWork && !selectedRepairWorks.find((srw) => srw._id === repairWorkId)) {
       setSelectedRepairWorks([...selectedRepairWorks, repairWork]);
     }
   };
 
   const removeRepairWork = (repairWorkId) => {
-    setSelectedRepairWorks(selectedRepairWorks.filter(rw => rw._id !== repairWorkId));
+    setSelectedRepairWorks(selectedRepairWorks.filter((rw) => rw._id !== repairWorkId));
   };
 
   const calculateTotal = () => {
@@ -56,32 +64,32 @@ export default function WorkAssignment() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!customerName.trim() || !selectedStoreId || selectedRepairWorks.length === 0) return;
 
-    const selectedStore = stores.find(s => s._id === selectedStoreId);
+    const selectedStore = stores.find((s) => s._id === selectedStoreId);
     if (!selectedStore) return;
 
     const newOrder = {
       customerName: customerName.trim(),
       storeId: selectedStoreId,
       storeName: selectedStore.name,
-      repairWorks: selectedRepairWorks.map(rw => ({
+      repairWorks: selectedRepairWorks.map((rw) => ({
         repairWorkId: rw._id,
         name: rw.name,
-        price: rw.price
+        price: rw.price,
       })),
-      totalAmount: calculateTotal()
+      totalAmount: calculateTotal(),
     };
 
     try {
-      const res = await fetch(`${API_BASE}/workOrders`, {
+      const res = await fetch(`${API_BASE}/api/workOrders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newOrder)
+        body: JSON.stringify(newOrder),
       });
-      const savedOrder = await res.json();
 
+      const savedOrder = await res.json();
       setWorkOrders([savedOrder, ...workOrders]);
 
       // Reset form
@@ -89,7 +97,7 @@ export default function WorkAssignment() {
       setSelectedStoreId('');
       setSelectedRepairWorks([]);
     } catch (err) {
-      console.error(err);
+      console.error('Error saving order:', err);
     }
   };
 
@@ -127,7 +135,7 @@ export default function WorkAssignment() {
                     <SelectValue placeholder={t('chooseStore')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {stores.map(store => (
+                    {stores.map((store) => (
                       <SelectItem key={store._id} value={store._id}>
                         {store.name} - {store.ownerName}
                       </SelectItem>
@@ -143,7 +151,7 @@ export default function WorkAssignment() {
                     <SelectValue placeholder={t('selectRepairWorkToAdd')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {repairWorks.map(work => (
+                    {repairWorks.map((work) => (
                       <SelectItem key={work._id} value={work._id}>
                         {work.name} - ₹{work.price}
                       </SelectItem>
@@ -156,7 +164,7 @@ export default function WorkAssignment() {
                 <div className="space-y-2">
                   <Label>{t('selectedWorks')}</Label>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {selectedRepairWorks.map(work => (
+                    {selectedRepairWorks.map((work) => (
                       <div key={work._id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                         <span className="text-sm">{work.name} - ₹{work.price}</span>
                         <Button
@@ -176,9 +184,9 @@ export default function WorkAssignment() {
                 </div>
               )}
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={!customerName.trim() || !selectedStoreId || selectedRepairWorks.length === 0}
               >
                 {t('createOrder')}
@@ -199,7 +207,7 @@ export default function WorkAssignment() {
               </div>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {workOrders.slice(0, 5).map(order => (
+                {workOrders.slice(0, 5).map((order) => (
                   <div key={order._id} className="border rounded-lg p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -208,19 +216,19 @@ export default function WorkAssignment() {
                       </div>
                       <Badge>₹{order.totalAmount}</Badge>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Store className="w-4 h-4" />
                       <span>{order.storeName}</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Calendar className="w-4 h-4" />
                       <span>{new Date(order.date).toLocaleDateString()}</span>
                     </div>
-                    
+
                     <div className="text-xs text-gray-500">
-                      {t('works')}: {order.repairWorks.map(rw => rw.name).join(', ')}
+                      {t('works')}: {order.repairWorks.map((rw) => rw.name).join(', ')}
                     </div>
                   </div>
                 ))}
@@ -252,14 +260,12 @@ export default function WorkAssignment() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {workOrders.map(order => (
+                {workOrders.map((order) => (
                   <TableRow key={order._id}>
                     <TableCell className="font-medium">{order.customerName}</TableCell>
                     <TableCell>{order.storeName}</TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        {order.repairWorks.map(rw => rw.name).join(', ')}
-                      </div>
+                      <div className="text-sm">{order.repairWorks.map((rw) => rw.name).join(', ')}</div>
                     </TableCell>
                     <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
