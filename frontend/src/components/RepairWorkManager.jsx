@@ -17,18 +17,25 @@ export default function RepairWorkManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWork, setEditingWork] = useState(null);
   const [formData, setFormData] = useState({ name: '', price: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // ✅ Secure API URL from .env
   const API_BASE = import.meta.env.VITE_API_BASE
-    ? `${import.meta.env.VITE_API_BASE}/api/repairWorks`
+    ? `${import.meta.env.VITE_API_BASE}/repairWorks`
     : '/api/repairWorks';
 
+  // --- Fetch all repair works ---
   const fetchRepairWorks = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(API_BASE);
       setRepairWorks(res.data);
     } catch (err) {
       console.error(t('errorFetchingRepairWorks'), err);
+      setError(t('errorFetchingRepairWorks'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,16 +43,27 @@ export default function RepairWorkManager() {
     fetchRepairWorks();
   }, []);
 
+  // --- Submit add/edit form ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.price) return;
+    setError('');
+
+    if (!formData.name.trim() || !formData.price) {
+      setError(t('fillAllFields'));
+      return;
+    }
 
     const price = parseFloat(formData.price);
-    if (isNaN(price) || price <= 0) return;
+    if (isNaN(price) || price <= 0) {
+      setError(t('invalidPrice'));
+      return;
+    }
 
     try {
+      let res;
       if (editingWork) {
-        const res = await axios.put(`${API_BASE}/${editingWork._id}`, {
+        // Update existing
+        res = await axios.put(`${API_BASE}/${editingWork._id}`, {
           name: formData.name.trim(),
           price,
         });
@@ -53,7 +71,8 @@ export default function RepairWorkManager() {
           prev.map((work) => (work._id === res.data._id ? res.data : work))
         );
       } else {
-        const res = await axios.post(API_BASE, {
+        // Add new
+        res = await axios.post(API_BASE, {
           name: formData.name.trim(),
           price,
         });
@@ -62,6 +81,7 @@ export default function RepairWorkManager() {
       resetForm();
     } catch (err) {
       console.error(t('errorSavingRepairWork'), err);
+      setError(t('errorSavingRepairWork'));
     }
   };
 
@@ -77,6 +97,7 @@ export default function RepairWorkManager() {
       setRepairWorks((prev) => prev.filter((work) => work._id !== id));
     } catch (err) {
       console.error(t('errorDeletingRepairWork'), err);
+      setError(t('errorDeletingRepairWork'));
     }
   };
 
@@ -84,6 +105,7 @@ export default function RepairWorkManager() {
     setFormData({ name: '', price: '' });
     setEditingWork(null);
     setIsDialogOpen(false);
+    setError('');
   };
 
   return (
@@ -140,6 +162,10 @@ export default function RepairWorkManager() {
                   required
                 />
               </div>
+
+              {error && (
+                <div className="text-red-600 text-sm">{error}</div>
+              )}
 
               <div className="flex gap-2 pt-4">
                 <Button type="submit" className="flex-1">
