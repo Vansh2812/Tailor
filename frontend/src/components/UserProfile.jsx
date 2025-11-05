@@ -8,7 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { User, Languages, Lock, CheckCircle } from 'lucide-react';
-import '../i18n'; // i18n initialized globally
+import '../i18n';
+
+// ✅ Environment variable for API base
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export default function UserProfile() {
   const { t, i18n } = useTranslation();
@@ -23,15 +26,17 @@ export default function UserProfile() {
   const [messageType, setMessageType] = useState('success');
   const [userEmail, setUserEmail] = useState('');
 
-  // Fetch user info from API
+  // Fetch user info from backend
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await fetch('/api/auth/all');
+        const res = await fetch(`${API_BASE}/api/auth/all`);
         const data = await res.json();
+
         if (data && data.users && data.users.length > 0) {
-          setUserEmail(data.users[0].email);
-          const lang = data.users[0].language || localStorage.getItem('lang') || 'english';
+          const user = data.users[0];
+          setUserEmail(user.email);
+          const lang = user.language || localStorage.getItem('lang') || 'english';
           setUserSettings({ language: lang });
           i18n.changeLanguage(lang);
         }
@@ -41,6 +46,7 @@ export default function UserProfile() {
         setMessageType('error');
       }
     };
+
     fetchUserData();
   }, [i18n, t]);
 
@@ -50,7 +56,7 @@ export default function UserProfile() {
     localStorage.setItem('lang', language);
 
     try {
-      const res = await fetch('/api/auth/update-language', {
+      const res = await fetch(`${API_BASE}/api/auth/update-language`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail, language })
@@ -95,7 +101,7 @@ export default function UserProfile() {
     }
 
     try {
-      const res = await fetch('/api/auth/change-password', {
+      const res = await fetch(`${API_BASE}/api/auth/change-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,8 +134,12 @@ export default function UserProfile() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900">{t('userProfile') || 'User Profile & Settings'}</h2>
-        <p className="text-gray-600">{t('manageAccount') || 'Manage your account settings and preferences'}</p>
+        <h2 className="text-3xl font-bold text-gray-900">
+          {t('userProfile') || 'User Profile & Settings'}
+        </h2>
+        <p className="text-gray-600">
+          {t('manageAccount') || 'Manage your account settings and preferences'}
+        </p>
       </div>
 
       {message && (
@@ -141,8 +151,8 @@ export default function UserProfile() {
         </Alert>
       )}
 
+      {/* Profile Info & Language Settings */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Profile Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -171,7 +181,6 @@ export default function UserProfile() {
           </CardContent>
         </Card>
 
-        {/* Language Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -201,11 +210,6 @@ export default function UserProfile() {
                     ? t('english') || 'English'
                     : t('gujarati') || 'ગુજરાતી'}
                 </span>
-              </p>
-              <p className="mt-2">
-                {userSettings.language === 'english'
-                  ? t('languageInfoEn') || 'Language changes will be applied to the interface.'
-                  : t('languageInfoGu') || 'ભાષા ફેરફારો ઇન્ટરફેસ પર લાગુ થશે.'}
               </p>
             </div>
           </CardContent>
