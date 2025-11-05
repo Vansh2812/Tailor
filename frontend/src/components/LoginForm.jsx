@@ -1,10 +1,10 @@
-// frontend/src/components/LoginForm.jsx
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// 👇 make sure this file exists as src/components/ui/Alert.jsx (capital A)
+import { Alert, AlertDescription } from '@/components/ui/Alert';
 import axios from 'axios';
 
 export default function LoginForm({ onLogin }) {
@@ -21,7 +21,8 @@ export default function LoginForm({ onLogin }) {
   const [resetMessage, setResetMessage] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
 
-  const API_BASE = "/api";
+  // ✅ Use environment variable (from .env)
+  const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
   // --- Login ---
   const handleLogin = async (e) => {
@@ -187,8 +188,18 @@ export default function LoginForm({ onLogin }) {
               )}
 
               <div className="space-y-2">
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={resetLoading}>
-                  {resetStep === 1 ? (resetLoading ? 'Sending...' : 'Send Reset Code') : (resetLoading ? 'Resetting...' : 'Reset Password')}
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={resetLoading}
+                >
+                  {resetStep === 1
+                    ? resetLoading
+                      ? 'Sending...'
+                      : 'Send Reset Code'
+                    : resetLoading
+                    ? 'Resetting...'
+                    : 'Reset Password'}
                 </Button>
                 <Button
                   type="button"
@@ -254,7 +265,11 @@ export default function LoginForm({ onLogin }) {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={loading}
+            >
               {loading ? 'Logging in...' : 'Login'}
             </Button>
 
