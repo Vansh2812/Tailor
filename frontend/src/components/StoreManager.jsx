@@ -1,4 +1,3 @@
-// frontend/src/components/StoreManager.jsx
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,11 @@ export default function StoreManager() {
   const [editingStore, setEditingStore] = useState(null);
   const [formData, setFormData] = useState({ name: '', ownerName: '', mobile: '', address: '' });
 
-  const API_URL = 'https://tailor-9pdf.onrender.com/api/stores'; // Update with your backend URL
+  // ✅ Use environment variable for API URL
+  const API_URL =
+    import.meta.env.VITE_API_BASE
+      ? `${import.meta.env.VITE_API_BASE}/api/stores`
+      : '/api/stores';
 
   // Fetch stores from backend
   const fetchStores = async () => {
@@ -37,12 +40,18 @@ export default function StoreManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.ownerName.trim() || !formData.mobile.trim() || !formData.address.trim()) return;
+    if (
+      !formData.name.trim() ||
+      !formData.ownerName.trim() ||
+      !formData.mobile.trim() ||
+      !formData.address.trim()
+    )
+      return;
 
     try {
       if (editingStore) {
         const res = await axios.put(`${API_URL}/${editingStore._id}`, formData);
-        setStores(stores.map(store => (store._id === res.data._id ? res.data : store)));
+        setStores(stores.map((store) => (store._id === res.data._id ? res.data : store)));
       } else {
         const res = await axios.post(API_URL, formData);
         setStores([...stores, res.data]);
@@ -55,14 +64,19 @@ export default function StoreManager() {
 
   const handleEdit = (store) => {
     setEditingStore(store);
-    setFormData({ name: store.name, ownerName: store.ownerName, mobile: store.mobile, address: store.address });
+    setFormData({
+      name: store.name,
+      ownerName: store.ownerName,
+      mobile: store.mobile,
+      address: store.address,
+    });
     setIsDialogOpen(true);
   };
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${API_URL}/${id}`);
-      setStores(stores.filter(store => store._id !== id));
+      setStores(stores.filter((store) => store._id !== id));
     } catch (err) {
       console.error('Error deleting store:', err);
     }
