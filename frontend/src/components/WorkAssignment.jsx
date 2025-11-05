@@ -19,7 +19,7 @@ export default function WorkAssignment() {
   const [customerName, setCustomerName] = useState('');
   const [selectedStoreId, setSelectedStoreId] = useState('');
 
-  const API_BASE = 'http://localhost:5000/api'; // Backend URL
+  const API_BASE = 'https://tailor-9pdf.onrender.com/api'; // Backend URL
 
   // Fetch data from backend
   useEffect(() => {
