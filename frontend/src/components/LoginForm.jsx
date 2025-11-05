@@ -21,7 +21,7 @@ export default function LoginForm({ onLogin }) {
   const [resetMessage, setResetMessage] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
 
-  const API_BASE = import.meta.env.VITE_API_BASE;
+  const API_BASE = "/api";
 
   // --- Login ---
   const handleLogin = async (e) => {
