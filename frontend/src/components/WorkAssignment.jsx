@@ -47,6 +47,7 @@ export default function WorkAssignment() {
     fetchData();
   }, []);
 
+  // Add repair work to selected list
   const addRepairWork = (repairWorkId) => {
     const repairWork = repairWorks.find((rw) => rw._id === repairWorkId);
     if (repairWork && !selectedRepairWorks.find((srw) => srw._id === repairWorkId)) {
@@ -54,14 +55,15 @@ export default function WorkAssignment() {
     }
   };
 
+  // Remove repair work from selected list
   const removeRepairWork = (repairWorkId) => {
     setSelectedRepairWorks(selectedRepairWorks.filter((rw) => rw._id !== repairWorkId));
   };
 
-  const calculateTotal = () => {
-    return selectedRepairWorks.reduce((total, rw) => total + rw.price, 0);
-  };
+  // Calculate total price
+  const calculateTotal = () => selectedRepairWorks.reduce((total, rw) => total + rw.price, 0);
 
+  // Submit new work order
   const handleSubmit = async (e) => {
     e.preventDefault();
 
