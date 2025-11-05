@@ -18,7 +18,6 @@ export default function StoreManager() {
   const [editingStore, setEditingStore] = useState(null);
   const [formData, setFormData] = useState({ name: '', ownerName: '', mobile: '', address: '' });
 
-  // ✅ Use environment variable for API URL
   const API_URL =
     import.meta.env.VITE_API_BASE
       ? `${import.meta.env.VITE_API_BASE}/api/stores`
