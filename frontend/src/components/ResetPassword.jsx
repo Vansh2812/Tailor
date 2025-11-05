@@ -19,8 +19,7 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
 
   // ✅ Secure API base from environment variable
-  const API_BASE =
-    import.meta.env.VITE_API_BASE ? `${import.meta.env.VITE_API_BASE}/api` : '/api';
+  const API_BASE = import.meta.env.VITE_API_BASE || '';
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -37,9 +36,14 @@ export default function ResetPassword() {
       return;
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await axios.post(`${API_BASE}/auth/reset-password`, {
+      const res = await axios.post(`${API_BASE}/api/auth/reset-password`, {
         email,
         resetCode,
         newPassword: password,
@@ -60,7 +64,7 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-blue-700">Reset Your Password</CardTitle>
           <CardDescription>Enter your email, reset code, and new password</CardDescription>
@@ -68,6 +72,7 @@ export default function ResetPassword() {
 
         <CardContent>
           <form onSubmit={handleResetPassword} className="space-y-4">
+            {/* Email Input */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -80,6 +85,7 @@ export default function ResetPassword() {
               />
             </div>
 
+            {/* Reset Code Input */}
             <div className="space-y-2">
               <Label htmlFor="resetCode">Reset Code</Label>
               <Input
@@ -92,6 +98,7 @@ export default function ResetPassword() {
               />
             </div>
 
+            {/* New Password */}
             <div className="space-y-2">
               <Label htmlFor="password">New Password</Label>
               <Input
@@ -104,6 +111,7 @@ export default function ResetPassword() {
               />
             </div>
 
+            {/* Confirm Password */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
@@ -116,18 +124,21 @@ export default function ResetPassword() {
               />
             </div>
 
+            {/* Error Alert */}
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-700">{error}</AlertDescription>
               </Alert>
             )}
 
+            {/* Success Alert */}
             {message && (
               <Alert className="border-green-200 bg-green-50">
                 <AlertDescription className="text-green-700">{message}</AlertDescription>
               </Alert>
             )}
 
+            {/* Submit Button */}
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
