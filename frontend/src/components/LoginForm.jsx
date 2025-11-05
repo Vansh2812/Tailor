@@ -20,10 +20,11 @@ export default function LoginForm({ onLogin }) {
   const [resetMessage, setResetMessage] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
 
-  // ✅ Production-ready API URL (replace with your deployed backend)
-  const API_BASE = import.meta.env.VITE_API_BASE || 'https://tailor-9pdf.onrender.com';
+  // ✅ Make sure this matches your backend base URL
+  // Example: VITE_API_BASE=https://tailor-9pdf.onrender.com/api
+  const API_BASE = import.meta.env.VITE_API_BASE;
 
-  // --- Login ---
+  // --- Login handler ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -37,7 +38,7 @@ export default function LoginForm({ onLogin }) {
 
     try {
       const response = await axios.post(`${API_BASE}/auth/login`, { email, password });
-      setLoading(false);
+
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
         onLogin();
@@ -45,8 +46,9 @@ export default function LoginForm({ onLogin }) {
         setError(response.data.message || 'Invalid email or password');
       }
     } catch (err) {
-      setLoading(false);
       setError(err.response?.data?.message || 'Server error, please try again');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,10 +69,10 @@ export default function LoginForm({ onLogin }) {
       await axios.post(`${API_BASE}/auth/forgot-password`, { email: resetEmail });
       setResetMessage('Reset code sent to your email.');
       setResetStep(2);
-      setResetLoading(false);
     } catch (err) {
-      setResetLoading(false);
       setError(err.response?.data?.message || 'Failed to send reset code');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -93,7 +95,6 @@ export default function LoginForm({ onLogin }) {
         resetCode,
         newPassword,
       });
-      setResetLoading(false);
 
       if (response.data.success) {
         setResetMessage('Password reset successfully. You can now login.');
@@ -110,8 +111,9 @@ export default function LoginForm({ onLogin }) {
         setError(response.data.message || 'Failed to reset password');
       }
     } catch (err) {
-      setResetLoading(false);
       setError(err.response?.data?.message || 'Server error, please try again');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -172,29 +174,22 @@ export default function LoginForm({ onLogin }) {
                   </div>
                 </>
               )}
+
               {error && (
                 <Alert className="border-red-200 bg-red-50">
                   <AlertDescription className="text-red-700">{error}</AlertDescription>
                 </Alert>
               )}
+
               {resetMessage && (
                 <Alert className="border-green-200 bg-green-50">
                   <AlertDescription className="text-green-700">{resetMessage}</AlertDescription>
                 </Alert>
               )}
+
               <div className="space-y-2">
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={resetLoading}
-                >
-                  {resetStep === 1
-                    ? resetLoading
-                      ? 'Sending...'
-                      : 'Send Reset Code'
-                    : resetLoading
-                    ? 'Resetting...'
-                    : 'Reset Password'}
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={resetLoading}>
+                  {resetStep === 1 ? (resetLoading ? 'Sending...' : 'Send Reset Code') : resetLoading ? 'Resetting...' : 'Reset Password'}
                 </Button>
                 <Button
                   type="button"
@@ -241,6 +236,7 @@ export default function LoginForm({ onLogin }) {
                 disabled={loading}
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -252,18 +248,17 @@ export default function LoginForm({ onLogin }) {
                 disabled={loading}
               />
             </div>
+
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-700">{error}</AlertDescription>
               </Alert>
             )}
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={loading}
-            >
+
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
               {loading ? 'Logging in...' : 'Login'}
             </Button>
+
             <div className="text-center">
               <button
                 type="button"
