@@ -26,6 +26,8 @@ import * as XLSX from "xlsx/xlsx.mjs";
 import logo from "../logo/Patel Tailor.jpg";
 import qrImage from "../logo/PhonePeQR.jpg"; // ✅ Use your uploaded QR code image
 
+
+
 export default function BillGenerator() {
   const { t } = useTranslation();
 
@@ -36,7 +38,8 @@ export default function BillGenerator() {
   const [endDate, setEndDate] = useState("");
   const [billData, setBillData] = useState(null);
 
-  const API_BASE = "http://localhost:5000/api";
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
 
   // ✅ Fetch all stores and work orders
   useEffect(() => {
