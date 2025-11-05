@@ -19,7 +19,7 @@ export default function StoreManager() {
   const [editingStore, setEditingStore] = useState(null);
   const [formData, setFormData] = useState({ name: '', ownerName: '', mobile: '', address: '' });
 
-  const API_URL = 'http://localhost:5000/api/stores'; // Update with your backend URL
+  const API_URL = 'https://tailor-9pdf.onrender.com/api/stores'; // Update with your backend URL
 
   // Fetch stores from backend
   const fetchStores = async () => {
