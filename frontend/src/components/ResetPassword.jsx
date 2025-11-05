@@ -1,4 +1,3 @@
-// frontend/src/components/ResetPassword.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -19,7 +18,9 @@ export default function ResetPassword() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_BASE = '/api';
+  // ✅ Secure API base from environment variable
+  const API_BASE =
+    import.meta.env.VITE_API_BASE ? `${import.meta.env.VITE_API_BASE}/api` : '/api';
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -30,6 +31,7 @@ export default function ResetPassword() {
       setError('Please fill in all fields');
       return;
     }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
