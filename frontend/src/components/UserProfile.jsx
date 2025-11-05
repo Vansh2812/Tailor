@@ -17,14 +17,11 @@ export default function UserProfile() {
   const { t, i18n } = useTranslation();
 
   const [userSettings, setUserSettings] = useState({ language: i18n.language || 'english' });
-  const [passwordForm, setPasswordForm] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
   const [userEmail, setUserEmail] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Fetch user info from backend
   useEffect(() => {
@@ -33,7 +30,7 @@ export default function UserProfile() {
         const res = await fetch(`${API_BASE}/api/auth/all`);
         const data = await res.json();
 
-        if (data && data.users && data.users.length > 0) {
+        if (data?.users?.length > 0) {
           const user = data.users[0];
           setUserEmail(user.email);
           const lang = user.language || localStorage.getItem('lang') || 'english';
@@ -42,13 +39,18 @@ export default function UserProfile() {
         }
       } catch (err) {
         console.error('Failed to fetch user data:', err);
-        setMessage(t('loadError') || 'Failed to load user data');
-        setMessageType('error');
+        showMessage(t('loadError') || 'Failed to load user data', 'error');
       }
     };
 
     fetchUserData();
   }, [i18n, t]);
+
+  const showMessage = (msg, type = 'success', duration = 3000) => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => setMessage(''), duration);
+  };
 
   const handleLanguageChange = async (language) => {
     setUserSettings({ language });
@@ -64,41 +66,37 @@ export default function UserProfile() {
 
       if (!res.ok) throw new Error('Failed to update language');
 
-      setMessage(
+      showMessage(
         language === 'english'
           ? t('languageChangedEn') || 'Language changed to English'
-          : t('languageChangedGu') || 'ભાષા ગુજરાતી કરી દેવાઈ'
+          : t('languageChangedGu') || 'ભાષા ગુજરાતી કરી દેવાઈ',
+        'success'
       );
-      setMessageType('success');
     } catch (err) {
       console.error(err);
-      setMessage(t('updateLanguageError') || 'Failed to update language');
-      setMessageType('error');
+      showMessage(t('updateLanguageError') || 'Failed to update language', 'error');
     }
-
-    setTimeout(() => setMessage(''), 3000);
   };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
     if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      setMessage(t('fillAllFields') || 'Please fill all password fields');
-      setMessageType('error');
+      showMessage(t('fillAllFields') || 'Please fill all password fields', 'error');
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      setMessage(t('passwordLength') || 'New password must be at least 6 characters long');
-      setMessageType('error');
+      showMessage(t('passwordLength') || 'New password must be at least 6 characters long', 'error');
       return;
     }
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setMessage(t('passwordMismatch') || 'New passwords do not match');
-      setMessageType('error');
+      showMessage(t('passwordMismatch') || 'New passwords do not match', 'error');
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await fetch(`${API_BASE}/api/auth/change-password`, {
@@ -114,21 +112,18 @@ export default function UserProfile() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.message || t('passwordChangeFailed') || 'Password change failed');
-        setMessageType('error');
+        showMessage(data.message || t('passwordChangeFailed') || 'Password change failed', 'error');
         return;
       }
 
-      setMessage(t('passwordChanged') || 'Password changed successfully');
-      setMessageType('success');
+      showMessage(t('passwordChanged') || 'Password changed successfully', 'success');
       setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       console.error(err);
-      setMessage(t('passwordChangeFailed') || 'Password change failed');
-      setMessageType('error');
+      showMessage(t('passwordChangeFailed') || 'Password change failed', 'error');
+    } finally {
+      setLoading(false);
     }
-
-    setTimeout(() => setMessage(''), 3000);
   };
 
   return (
@@ -259,8 +254,8 @@ export default function UserProfile() {
               />
             </div>
 
-            <Button type="submit" className="w-full md:w-auto">
-              {t('updatePassword') || 'Update Password'}
+            <Button type="submit" className="w-full md:w-auto" disabled={loading}>
+              {loading ? t('updating') || 'Updating...' : t('updatePassword') || 'Update Password'}
             </Button>
           </form>
         </CardContent>
