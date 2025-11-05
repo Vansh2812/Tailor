@@ -38,7 +38,7 @@ export default function BillGenerator() {
   const [endDate, setEndDate] = useState("");
   const [billData, setBillData] = useState(null);
 
-  const API_BASE = import.meta.env.VITE_API_BASE;
+  const API_BASE = "https://tailor-9pdf.onrender.com/api";
 
 
   // ✅ Fetch all stores and work orders
