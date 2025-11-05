@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-// 👇 make sure this file exists as src/components/ui/Alert.jsx (capital A)
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import axios from 'axios';
 
@@ -21,8 +20,8 @@ export default function LoginForm({ onLogin }) {
   const [resetMessage, setResetMessage] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
 
-  // ✅ Use environment variable (from .env)
-  const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+  // ✅ Production-ready API URL (replace with your deployed backend)
+  const API_BASE = import.meta.env.VITE_API_BASE || 'https://tailor-9pdf.onrender.com';
 
   // --- Login ---
   const handleLogin = async (e) => {
@@ -51,7 +50,7 @@ export default function LoginForm({ onLogin }) {
     }
   };
 
-  // --- Forgot password: Step 1 ---
+  // --- Forgot Password Step 1 ---
   const handleSendResetCode = async (e) => {
     e.preventDefault();
     setError('');
@@ -75,7 +74,7 @@ export default function LoginForm({ onLogin }) {
     }
   };
 
-  // --- Forgot password: Step 2 ---
+  // --- Forgot Password Step 2 ---
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
@@ -116,7 +115,7 @@ export default function LoginForm({ onLogin }) {
     }
   };
 
-  // --- Forgot password UI ---
+  // --- Forgot Password UI ---
   if (showForgotPassword) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -147,7 +146,6 @@ export default function LoginForm({ onLogin }) {
                   />
                 </div>
               )}
-
               {resetStep === 2 && (
                 <>
                   <div className="space-y-2">
@@ -174,19 +172,16 @@ export default function LoginForm({ onLogin }) {
                   </div>
                 </>
               )}
-
               {error && (
                 <Alert className="border-red-200 bg-red-50">
                   <AlertDescription className="text-red-700">{error}</AlertDescription>
                 </Alert>
               )}
-
               {resetMessage && (
                 <Alert className="border-green-200 bg-green-50">
                   <AlertDescription className="text-green-700">{resetMessage}</AlertDescription>
                 </Alert>
               )}
-
               <div className="space-y-2">
                 <Button
                   type="submit"
@@ -246,7 +241,6 @@ export default function LoginForm({ onLogin }) {
                 disabled={loading}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -258,13 +252,11 @@ export default function LoginForm({ onLogin }) {
                 disabled={loading}
               />
             </div>
-
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-700">{error}</AlertDescription>
               </Alert>
             )}
-
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
@@ -272,7 +264,6 @@ export default function LoginForm({ onLogin }) {
             >
               {loading ? 'Logging in...' : 'Login'}
             </Button>
-
             <div className="text-center">
               <button
                 type="button"
