@@ -1,4 +1,3 @@
-// frontend/src/components/BillGenerator.jsx
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -24,9 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Calendar } from "lucide-react";
 import * as XLSX from "xlsx/xlsx.mjs";
 import logo from "../logo/Patel Tailor.jpg";
-import qrImage from "../logo/PhonePeQR.jpg"; // ✅ Use your uploaded QR code image
-
-
+import qrImage from "../logo/PhonePeQR.jpg"; // ✅ QR image for invoice
 
 export default function BillGenerator() {
   const { t } = useTranslation();
@@ -38,21 +35,23 @@ export default function BillGenerator() {
   const [endDate, setEndDate] = useState("");
   const [billData, setBillData] = useState(null);
 
-  const API_BASE = "https://tailor-9pdf.onrender.com/api";
-
+  // ✅ Load API base from environment (fallback to /api for local)
+  const API_BASE = import.meta.env.VITE_API_BASE
+    ? `${import.meta.env.VITE_API_BASE}/api`
+    : "/api";
 
   // ✅ Fetch all stores and work orders
   useEffect(() => {
     fetch(`${API_BASE}/stores`)
       .then((res) => res.json())
       .then((data) => setStores(data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Error fetching stores:", err));
 
     fetch(`${API_BASE}/workOrders`)
       .then((res) => res.json())
       .then((data) => setWorkOrders(data))
-      .catch((err) => console.error(err));
-  }, []);
+      .catch((err) => console.error("Error fetching work orders:", err));
+  }, [API_BASE]);
 
   // ✅ Generate Bill (Filter Data)
   const generateBill = () => {
@@ -88,13 +87,11 @@ export default function BillGenerator() {
     });
   };
 
-  // ✅ PDF Generation (with Logo + Your QR Image)
+  // ✅ PDF Generation (with Logo + QR)
   const downloadPDF = async () => {
     if (!billData) return;
 
     const html2pdf = (await import("html2pdf.js")).default;
-    const logoUrl = logo;
-    const qrUrl = qrImage; // ✅ your actual QR image
 
     const htmlContent = `
       <html>
@@ -122,7 +119,7 @@ export default function BillGenerator() {
         </head>
         <body>
           <div class="header">
-            <img src="${logoUrl}" class="logo" alt="Patel Tailor Logo" />
+            <img src="${logo}" class="logo" alt="Patel Tailor Logo" />
             <div class="title">Patel Tailor ${t("billGenerator.billReport")}</div>
             <div class="store-name">${billData.storeName}</div>
             <div class="period">${t("billGenerator.period")}: ${billData.dateRange}</div>
@@ -164,7 +161,7 @@ export default function BillGenerator() {
 
           <div class="qr-section">
             <p>Scan to Pay using PhonePe / UPI</p>
-            <img src="${qrUrl}" alt="PhonePe QR Code" />
+            <img src="${qrImage}" alt="PhonePe QR Code" />
             <p><strong>Vansh Patel</strong></p>
             <p>UPI ID: 9016171297@axl</p>
           </div>
@@ -191,13 +188,11 @@ export default function BillGenerator() {
         .set(opt)
         .from(element)
         .save()
-        .then(() => {
-          document.body.removeChild(element);
-        });
+        .then(() => document.body.removeChild(element));
     }, 500);
   };
 
-  // ✅ Excel Export (same as before)
+  // ✅ Excel Export
   const downloadExcel = () => {
     if (!billData) return;
 
@@ -229,20 +224,15 @@ export default function BillGenerator() {
 
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
-
     ws["!cols"] = [{ wch: 15 }, { wch: 30 }, { wch: 45 }, { wch: 15 }];
-
     XLSX.utils.book_append_sheet(wb, ws, "Bill Report");
-    const filename = `bill_${billData.storeName}_${startDate}_to_${endDate}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    XLSX.writeFile(wb, `bill_${billData.storeName}_${startDate}_to_${endDate}.xlsx`);
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900">
-          {t("billGenerator.title")}
-        </h2>
+        <h2 className="text-3xl font-bold text-gray-900">{t("billGenerator.title")}</h2>
         <p className="text-gray-600">{t("billGenerator.description")}</p>
       </div>
 
@@ -257,10 +247,7 @@ export default function BillGenerator() {
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="store">{t("billGenerator.selectStore")}</Label>
-              <Select
-                value={selectedStoreId}
-                onValueChange={setSelectedStoreId}
-              >
+              <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
                 <SelectTrigger>
                   <SelectValue placeholder={t("billGenerator.chooseStore")} />
                 </SelectTrigger>
@@ -320,8 +307,7 @@ export default function BillGenerator() {
                   <Download className="w-4 h-4 mr-2" /> {t("billGenerator.pdf")}
                 </Button>
                 <Button variant="outline" onClick={downloadExcel}>
-                  <Download className="w-4 h-4 mr-2" />{" "}
-                  {t("billGenerator.excel")}
+                  <Download className="w-4 h-4 mr-2" /> {t("billGenerator.excel")}
                 </Button>
               </div>
             </div>
@@ -336,33 +322,23 @@ export default function BillGenerator() {
                     <TableHead>{t("billGenerator.date")}</TableHead>
                     <TableHead>{t("billGenerator.customer")}</TableHead>
                     <TableHead>{t("billGenerator.works")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("billGenerator.amount")}
-                    </TableHead>
+                    <TableHead className="text-right">{t("billGenerator.amount")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {billData.orders.map((order, index) => (
                     <TableRow key={index}>
-                      <TableCell>
-                        {new Date(order.date).toLocaleDateString()}
-                      </TableCell>
+                      <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                       <TableCell>{order.customerName}</TableCell>
-                      <TableCell>
-                        {order.repairWorks.map((rw) => rw.name).join(", ")}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {order.totalAmount}
-                      </TableCell>
+                      <TableCell>{order.repairWorks.map((rw) => rw.name).join(", ")}</TableCell>
+                      <TableCell className="text-right">{order.totalAmount}</TableCell>
                     </TableRow>
                   ))}
                   <TableRow>
                     <TableCell colSpan={3}>
                       <Badge>{t("billGenerator.total")}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      {billData.totalAmount}
-                    </TableCell>
+                    <TableCell className="text-right">{billData.totalAmount}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
