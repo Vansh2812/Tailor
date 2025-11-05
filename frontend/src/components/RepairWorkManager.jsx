@@ -17,7 +17,7 @@ export default function RepairWorkManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWork, setEditingWork] = useState(null);
   const [formData, setFormData] = useState({ name: '', price: '' });
-  const API_URL = 'http://localhost:5000/api/repairWorks';
+  const API_URL = 'https://tailor-9pdf.onrender.com/api/repairWorks';
 
   const fetchRepairWorks = async () => {
     try {
