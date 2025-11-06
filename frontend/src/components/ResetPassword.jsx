@@ -51,10 +51,10 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-      console.log("🔐 Sending reset request to:", `${API_BASE}/auth/reset-password`);
+      console.log("🔐 Sending reset request to:", `${API_BASE}/auth/forgot-password`);
 
       // ✅ Note: Render backend already includes "/api" in the base
-      const res = await axios.post(`${API_BASE}/auth/reset-password`, {
+      const res = await axios.post(`${API_BASE}/auth/forgot-password`, {
         email,
         resetCode,
         newPassword: password,
