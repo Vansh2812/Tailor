@@ -27,9 +27,9 @@ export default function WorkAssignment() {
     const fetchData = async () => {
       try {
         const [repairRes, storeRes, orderRes] = await Promise.all([
-          fetch(`${API_BASE}/api/repairWorks`),
-          fetch(`${API_BASE}/api/stores`),
-          fetch(`${API_BASE}/api/workOrders`),
+          fetch(`${API_BASE}/repairWorks`),
+          fetch(`${API_BASE}/stores`),
+          fetch(`${API_BASE}/workOrders`),
         ]);
 
         const repairData = await repairRes.json();
