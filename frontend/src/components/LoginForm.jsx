@@ -1,138 +1,164 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function LoginForm({ onLogin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  // 🔐 Login states
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 🔁 Forgot password states
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetStep, setResetStep] = useState(1);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetCode, setResetCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [resetMessage, setResetMessage] = useState('');
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
 
-  // ✅ Make sure this matches your backend base URL
-  // Example: VITE_API_BASE=https://tailor-9pdf.onrender.com/api
-  const API_BASE = import.meta.env.VITE_API_BASE;
+  // ✅ Use environment variable for API base URL
+  const API_BASE =
+    import.meta.env.VITE_API_BASE || "https://tailor-9pdf.onrender.com/api";
 
-  // --- Login handler ---
+  // --- 🔹 LOGIN HANDLER ---
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     if (!email || !password) {
-      setError('Please enter both email and password');
+      setError("Please enter both email and password");
       setLoading(false);
       return;
     }
 
     try {
-      const response = await axios.post(`${API_BASE}/auth/login`, { email, password });
+      const response = await axios.post(`${API_BASE}/auth/login`, {
+        email,
+        password,
+      });
 
       if (response.data.success) {
-        localStorage.setItem('token', response.data.token);
-        onLogin();
+        localStorage.setItem("authToken", response.data.token);
+        onLogin(response.data.token);
       } else {
-        setError(response.data.message || 'Invalid email or password');
+        setError(response.data.message || "Invalid email or password");
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Server error, please try again');
+      console.error("❌ Login Error:", err);
+      setError(err.response?.data?.message || "Server error, please try again");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- Forgot Password Step 1 ---
+  // --- 🔹 SEND RESET CODE ---
   const handleSendResetCode = async (e) => {
     e.preventDefault();
-    setError('');
-    setResetMessage('');
+    setError("");
+    setResetMessage("");
     setResetLoading(true);
 
     if (!resetEmail) {
-      setError('Please enter your email address');
+      setError("Please enter your email address");
       setResetLoading(false);
       return;
     }
 
     try {
-      await axios.post(`${API_BASE}/auth/forgot-password`, { email: resetEmail });
-      setResetMessage('Reset code sent to your email.');
-      setResetStep(2);
+      const res = await axios.post(`${API_BASE}/auth/forgot-password`, {
+        email: resetEmail,
+      });
+
+      if (res.data.success) {
+        setResetMessage("✅ Reset code sent to your email.");
+        setResetStep(2);
+      } else {
+        setError(res.data.message || "Failed to send reset code");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send reset code');
+      console.error("❌ Forgot Password Error:", err);
+      setError(err.response?.data?.message || "Server error, please try again");
     } finally {
       setResetLoading(false);
     }
   };
 
-  // --- Forgot Password Step 2 ---
+  // --- 🔹 RESET PASSWORD ---
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    setError('');
-    setResetMessage('');
+    setError("");
+    setResetMessage("");
     setResetLoading(true);
 
     if (!resetCode || !newPassword) {
-      setError('Please enter both reset code and new password');
+      setError("Please enter both reset code and new password");
       setResetLoading(false);
       return;
     }
 
     try {
-      const response = await axios.post(`${API_BASE}/auth/reset-password`, {
+      const res = await axios.post(`${API_BASE}/auth/reset-password`, {
         email: resetEmail,
         resetCode,
         newPassword,
       });
 
-      if (response.data.success) {
-        setResetMessage('Password reset successfully. You can now login.');
+      if (res.data.success) {
+        setResetMessage("✅ Password reset successfully. You can now login.");
         setTimeout(() => {
           setShowForgotPassword(false);
           setResetStep(1);
-          setResetEmail('');
-          setResetCode('');
-          setNewPassword('');
-          setResetMessage('');
-          setError('');
-        }, 3000);
+          setResetEmail("");
+          setResetCode("");
+          setNewPassword("");
+          setResetMessage("");
+          setError("");
+        }, 2500);
       } else {
-        setError(response.data.message || 'Failed to reset password');
+        setError(res.data.message || "Failed to reset password");
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Server error, please try again');
+      console.error("❌ Reset Password Error:", err);
+      setError(err.response?.data?.message || "Server error, please try again");
     } finally {
       setResetLoading(false);
     }
   };
 
-  // --- Forgot Password UI ---
+  // --- 🔹 FORGOT PASSWORD UI ---
   if (showForgotPassword) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-blue-700">Reset Password</CardTitle>
+            <CardTitle className="text-2xl font-bold text-blue-700">
+              Reset Password
+            </CardTitle>
             <CardDescription>
               {resetStep === 1
-                ? 'Enter your email to receive a reset code'
-                : 'Enter the code and your new password'}
+                ? "Enter your email to receive a reset code"
+                : "Enter the code and your new password"}
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form
-              onSubmit={resetStep === 1 ? handleSendResetCode : handleResetPassword}
+              onSubmit={
+                resetStep === 1 ? handleSendResetCode : handleResetPassword
+              }
               className="space-y-4"
             >
               {resetStep === 1 && (
@@ -145,9 +171,11 @@ export default function LoginForm({ onLogin }) {
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     disabled={resetLoading}
+                    required
                   />
                 </div>
               )}
+
               {resetStep === 2 && (
                 <>
                   <div className="space-y-2">
@@ -159,6 +187,7 @@ export default function LoginForm({ onLogin }) {
                       value={resetCode}
                       onChange={(e) => setResetCode(e.target.value)}
                       disabled={resetLoading}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -170,6 +199,7 @@ export default function LoginForm({ onLogin }) {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       disabled={resetLoading}
+                      required
                     />
                   </div>
                 </>
@@ -177,19 +207,33 @@ export default function LoginForm({ onLogin }) {
 
               {error && (
                 <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-700">{error}</AlertDescription>
+                  <AlertDescription className="text-red-700">
+                    {error}
+                  </AlertDescription>
                 </Alert>
               )}
 
               {resetMessage && (
                 <Alert className="border-green-200 bg-green-50">
-                  <AlertDescription className="text-green-700">{resetMessage}</AlertDescription>
+                  <AlertDescription className="text-green-700">
+                    {resetMessage}
+                  </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={resetLoading}>
-                  {resetStep === 1 ? (resetLoading ? 'Sending...' : 'Send Reset Code') : resetLoading ? 'Resetting...' : 'Reset Password'}
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={resetLoading}
+                >
+                  {resetStep === 1
+                    ? resetLoading
+                      ? "Sending..."
+                      : "Send Reset Code"
+                    : resetLoading
+                    ? "Resetting..."
+                    : "Reset Password"}
                 </Button>
                 <Button
                   type="button"
@@ -198,11 +242,11 @@ export default function LoginForm({ onLogin }) {
                   onClick={() => {
                     setShowForgotPassword(false);
                     setResetStep(1);
-                    setResetEmail('');
-                    setResetCode('');
-                    setNewPassword('');
-                    setResetMessage('');
-                    setError('');
+                    setResetEmail("");
+                    setResetCode("");
+                    setNewPassword("");
+                    setResetMessage("");
+                    setError("");
                   }}
                 >
                   Back to Login
@@ -215,14 +259,17 @@ export default function LoginForm({ onLogin }) {
     );
   }
 
-  // --- Login UI ---
+  // --- 🔹 LOGIN UI ---
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-blue-700">Tailor Management</CardTitle>
+          <CardTitle className="text-3xl font-bold text-blue-700">
+            Tailor Management
+          </CardTitle>
           <CardDescription>Admin Login Portal</CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
@@ -234,6 +281,7 @@ export default function LoginForm({ onLogin }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
+                required
               />
             </div>
 
@@ -246,17 +294,24 @@ export default function LoginForm({ onLogin }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
+                required
               />
             </div>
 
             {error && (
               <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">{error}</AlertDescription>
+                <AlertDescription className="text-red-700">
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
             </Button>
 
             <div className="text-center">
