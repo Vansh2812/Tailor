@@ -45,7 +45,7 @@ export default function Index() {
     import.meta.env.VITE_API_BASE || "https://tailor-9pdf.onrender.com/api";
 
   useEffect(() => {
-    console.log("🌐 Using API Base:", API_BASE);
+    
     const token = localStorage.getItem("authToken");
     if (token) {
       setIsLoggedIn(true);
@@ -58,7 +58,7 @@ export default function Index() {
       const token = localStorage.getItem("authToken");
       const url = `${API_BASE}/workOrders/stats`;
 
-      console.log("📡 Fetching stats from:", url);
+      
 
       const res = await fetch(url, {
         headers: {
