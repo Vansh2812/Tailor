@@ -297,7 +297,7 @@ export default function LoginForm({ onLogin }) {
               {loading ? "Logging in..." : "Login"}
             </Button>
 
-            <div className="text-center">
+            {/* <div className="text-center">
               <button
                 type="button"
                 className="text-sm text-blue-600 hover:underline"
@@ -305,7 +305,7 @@ export default function LoginForm({ onLogin }) {
               >
                 Forgot Password?
               </button>
-            </div>
+            </div> */}
           </form>
         </CardContent>
       </Card>
