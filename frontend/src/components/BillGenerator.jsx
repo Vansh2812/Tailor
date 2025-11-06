@@ -36,8 +36,8 @@ export default function BillGenerator() {
   const [billData, setBillData] = useState(null);
 
   const API_BASE = import.meta.env.VITE_API_BASE
-    ? `${import.meta.env.VITE_API_BASE}/api`
-    : "/api";
+    ? `${import.meta.env.VITE_API_BASE}`
+    : "/stores";
 
   // Fetch stores and work orders
   useEffect(() => {
