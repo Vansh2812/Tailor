@@ -40,25 +40,38 @@ export default function Index() {
     recentOrders: [],
   });
 
+  // ✅ Use environment variable for API base
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if (token) setIsLoggedIn(true);
-    if (token) updateStats();
+    if (token) {
+      setIsLoggedIn(true);
+      updateStats();
+    }
   }, []);
 
   const updateStats = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/workOrders/stats");
+      const token = localStorage.getItem("authToken");
+      const res = await fetch(`${API_BASE}/workOrders/stats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
       const data = await res.json();
       setStats({
-        totalOrders: data.totalOrders,
-        totalRevenue: data.totalRevenue,
-        totalStores: data.totalStores,
-        totalRepairWorks: data.totalRepairWorks,
-        recentOrders: data.recentOrders,
+        totalOrders: data.totalOrders || 0,
+        totalRevenue: data.totalRevenue || 0,
+        totalStores: data.totalStores || 0,
+        totalRepairWorks: data.totalRepairWorks || 0,
+        recentOrders: data.recentOrders || [],
       });
     } catch (err) {
-      console.error("Failed to fetch stats:", err);
+      console.error("❌ Failed to fetch stats:", err);
     }
   };
 
@@ -119,6 +132,7 @@ export default function Index() {
 
             {/* Stats Cards */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Orders */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -136,6 +150,7 @@ export default function Index() {
                 </CardContent>
               </Card>
 
+              {/* Revenue */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -153,6 +168,7 @@ export default function Index() {
                 </CardContent>
               </Card>
 
+              {/* Stores */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -170,6 +186,7 @@ export default function Index() {
                 </CardContent>
               </Card>
 
+              {/* Repair Works */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -315,6 +332,7 @@ export default function Index() {
         </div>
       </header>
 
+      {/* Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
@@ -354,7 +372,7 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation Bar (Visible only on small screens) */}
+      {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t shadow-lg lg:hidden z-30">
         <div className="flex justify-around h-full">
           {menuItems.slice(0, 6).map((item) => {
