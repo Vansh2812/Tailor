@@ -83,78 +83,194 @@ export default function BillGenerator() {
   const downloadPDF = async () => {
     if (!billData) return;
 
-    const html2pdf = (await import("html2pdf.js")).default;
+  const html2pdf = (await import("html2pdf.js")).default;
 
     const htmlContent = `
       <html>
         <head>
           <title>${t("billGenerator.billReport")} - ${billData.storeName}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
-            .header { text-align: center; margin-bottom: 25px; }
-            .logo { width: 90px; height: 90px; object-fit: cover; border-radius: 10px; }
-            .title { font-size: 22px; font-weight: bold; margin-top: 10px; }
-            .store-name { font-size: 18px; color: #555; }
-            .period { color: #777; margin-bottom: 10px; }
-            .summary { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; margin-bottom: 20px; border-radius: 6px; }
-            .summary h3 { margin: 0 0 10px 0; font-size: 18px; color: #444; }
-            table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 30px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f1f1f1; }
-            tr:nth-child(even) { background-color: #fafafa; }
-            .total-row td { font-weight: bold; background-color: #eafbea; }
-            .qr-section { text-align: center; margin-top: 30px; }
-            .qr-section img { width: 160px; height: 160px; border-radius: 10px; margin-top: 10px; }
-            .qr-section p { font-size: 14px; color: #444; margin: 5px 0; }
-            footer { text-align: center; margin-top: 30px; font-size: 12px; color: #888; }
+            /* --- Updated Styles for a Professional Look --- */
+            body { 
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                margin: 0; /* Use 0 margin for clean PDF generation */
+                padding: 40px; 
+                color: #333; 
+                font-size: 10pt; /* Slightly smaller base font */
+            }
+            .invoice-container { 
+                padding: 20px; 
+                border: 1px solid #ccc; 
+                border-radius: 8px; /* Slight rounding on the container */
+            }
+            .header { 
+                display: flex; /* Flexbox for logo and text alignment */
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 30px; 
+                padding-bottom: 15px;
+                border-bottom: 3px solid #007bff; /* Primary color separator */
+            }
+            .header-text {
+                text-align: right;
+            }
+            .logo { 
+                width: 70px; 
+                height: 70px; 
+                object-fit: cover; 
+                border-radius: 50%; /* Make logo round for modern look */
+                vertical-align: middle;
+            }
+            .title { 
+                font-size: 20pt; 
+                font-weight: bold; 
+                margin-top: 5px; 
+                color: #007bff; /* Primary color for title */
+                display: inline-block;
+                margin-left: 15px;
+            }
+            .store-name { 
+                font-size: 14pt; 
+                color: #555; 
+                font-weight: 600;
+            }
+            .period { 
+                color: #777; 
+                margin-bottom: 10px; 
+                font-size: 10pt;
+            }
+            .summary { 
+                background: #e9f7ff; /* Light blue background for summary */
+                border: 1px solid #b3e0ff; /* Light blue border */
+                padding: 15px; 
+                margin-bottom: 25px; 
+                border-radius: 6px; 
+            }
+            .summary h3 { 
+                margin: 0 0 10px 0; 
+                font-size: 12pt; 
+                color: #0056b3; /* Darker blue for heading */
+                border-bottom: 1px solid #b3e0ff;
+                padding-bottom: 5px;
+            }
+            .summary p { 
+                margin: 5px 0;
+            }
+            
+            table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                font-size: 10pt; 
+                margin-bottom: 35px; 
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Subtle shadow for table */
+            }
+            th, td { 
+                border: none; /* Remove default border */
+                padding: 12px 10px; 
+                text-align: left; 
+            }
+            th { 
+                background-color: #007bff; /* Primary color header */
+                color: white; 
+                font-weight: 600;
+                border-bottom: 3px solid #0056b3;
+                text-transform: uppercase;
+            }
+            tr:nth-child(even) { 
+                background-color: #f7f7f7; /* Light gray stripe */
+            }
+            tr:last-child td {
+                border-bottom: 1px solid #ccc;
+            }
+            .total-row td { 
+                font-weight: bold; 
+                background-color: #d4edda; /* Light green total row */
+                color: #155724; /* Dark green text */
+                border-top: 2px solid #c3e6cb;
+                font-size: 11pt;
+            }
+            
+            .qr-section { 
+                text-align: right; /* Align QR section to the right */
+                margin-top: 30px; 
+                padding-top: 20px;
+                border-top: 1px dashed #ccc;
+            }
+            .qr-section img { 
+                width: 120px; /* Reduced QR size */
+                height: 120px; 
+                border: 1px solid #ddd;
+                padding: 5px;
+                border-radius: 4px; 
+                margin-top: 10px; 
+            }
+            .qr-section p { 
+                font-size: 10pt; 
+                color: #444; 
+                margin: 3px 0; 
+            }
+            
+            footer { 
+                clear: both;
+                text-align: center; 
+                margin-top: 50px; 
+                font-size: 9pt; 
+                color: #888; 
+                padding-top: 10px;
+                border-top: 1px solid #eee;
+            }
           </style>
         </head>
         <body>
-          <div class="header">
-            <img src="${logo}" class="logo" alt="Patel Tailor Logo" />
-            <div class="title">Patel Tailor ${t("billGenerator.billReport")}</div>
-            <div class="store-name">${billData.storeName}</div>
-            <div class="period">${t("billGenerator.period")}: ${billData.dateRange}</div>
-          </div>
-          <div class="summary">
-            <h3>${t("billGenerator.summary")}</h3>
-            <p>${t("billGenerator.totalOrders")}: ${billData.totalOrders}</p>
-            <p>${t("billGenerator.totalRevenue")}: ₹${billData.totalAmount}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>${t("billGenerator.date")}</th>
-                <th>${t("billGenerator.customer")}</th>
-                <th>${t("billGenerator.works")}</th>
-                <th>${t("billGenerator.amount")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${billData.orders
-                .map(
-                  (order) => `
+          <div class="invoice-container">
+            <div class="header">
+              <img src="${logo}" class="logo" alt="Patel Tailor Logo" />
+              <div class="header-text">
+                <div class="title">Patel Tailor ${t("billGenerator.billReport")}</div>
+                <div class="store-name">${billData.storeName}</div>
+                <div class="period">${t("billGenerator.period")}: ${billData.dateRange}</div>
+              </div>
+            </div>
+            <div class="summary">
+              <h3>${t("billGenerator.summary")}</h3>
+              <p>${t("billGenerator.totalOrders")}: ${billData.totalOrders}</p>
+              <p>${t("billGenerator.totalRevenue")}: ₹${billData.totalAmount}</p>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>${t("billGenerator.date")}</th>
+                  <th>${t("billGenerator.customer")}</th>
+                  <th>${t("billGenerator.works")}</th>
+                  <th style="text-align: right;">${t("billGenerator.amount")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${billData.orders
+                  .map(
+                    (order) => `
                     <tr>
                       <td>${new Date(order.date).toLocaleDateString()}</td>
                       <td>${order.customerName}</td>
                       <td>${order.repairWorks.map((rw) => rw.name).join(", ")}</td>
-                      <td>₹${order.totalAmount}</td>
+                      <td style="text-align: right;">₹${order.totalAmount}</td>
                     </tr>`
-                )
-                .join("")}
-              <tr class="total-row">
-                <td colspan="3">${t("billGenerator.total")}</td>
-                <td>₹${billData.totalAmount}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="qr-section">
-            <p>Scan to Pay using GooglePay / UPI</p>
-            <img src="${qrImage}" alt="PhonePe QR Code" />
-            <p><strong>Aryan Patel</strong></p>
-            <p>UPI ID: pa9221169@okhdfcbank</p>
+                  )
+                  .join("")}
+                <tr class="total-row">
+                  <td colspan="3">${t("billGenerator.total")}</td>
+                  <td style="text-align: right;">₹${billData.totalAmount}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="qr-section">
+              <p>Scan to Pay using GooglePay / UPI</p>
+              <img src="${qrImage}" alt="PhonePe QR Code" />
+              <p><strong>Aryan Patel</strong></p>
+              <p>UPI ID: pa9221169@okhdfcbank</p>
+            </div>
+            <footer>Generated by Patel Tailor System</footer>
           </div>
-          <footer>Generated by Patel Tailor System</footer>
         </body>
       </html>
     `;
@@ -163,10 +279,11 @@ export default function BillGenerator() {
     element.innerHTML = htmlContent;
     document.body.appendChild(element);
 
+    // Note: I've updated the selector here to target the invoice-container for a cleaner PDF border.
     const opt = {
       margin: 0.4,
       filename: `Bill_${billData.storeName}_${startDate}_to_${endDate}.pdf`,
-      image: { type: "jpeg", quality: 1 },
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 3, useCORS: true },
       jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
     };
@@ -174,12 +291,13 @@ export default function BillGenerator() {
     setTimeout(() => {
       html2pdf()
         .set(opt)
-        .from(element)
+        .from(element.querySelector('.invoice-container')) // Target the new container class
         .save()
         .then(() => document.body.removeChild(element));
     }, 500);
   };
 
+  
   // Download Excel
   const downloadExcel = () => {
     if (!billData) return;
