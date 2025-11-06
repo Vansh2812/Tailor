@@ -149,7 +149,7 @@ export default function BillGenerator() {
             </tbody>
           </table>
           <div class="qr-section">
-            <p>Scan to Pay using PhonePe / UPI</p>
+            <p>Scan to Pay using GooglePay / UPI</p>
             <img src="${qrImage}" alt="PhonePe QR Code" />
             <p><strong>Aryan Patel</strong></p>
             <p>UPI ID: pa9221169@okhdfcbank</p>
