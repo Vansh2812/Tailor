@@ -27,7 +27,7 @@ export default function UserProfile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/auth/all`);
+        const res = await fetch(`${API_BASE}/auth/all`);
         const data = await res.json();
 
         if (data?.users?.length > 0) {
