@@ -66,7 +66,7 @@ export default function LoginForm({ onLogin }) {
     }
 
     try {
-      await axios.post(`${API_BASE}/auth/forgot-password`, { email: resetEmail });
+      await axios.post(`${API_BASE}/auth/reset-password`, { email: resetEmail });
       setResetMessage('Reset code sent to your email.');
       setResetStep(2);
     } catch (err) {
