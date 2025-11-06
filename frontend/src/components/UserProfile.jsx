@@ -58,7 +58,7 @@ export default function UserProfile() {
     localStorage.setItem('lang', language);
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/update-language`, {
+      const res = await fetch(`${API_BASE}/auth/update-language`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail, language })
