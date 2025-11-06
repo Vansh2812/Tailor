@@ -85,7 +85,7 @@ export default function WorkAssignment() {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/api/workOrders`, {
+      const res = await fetch(`${API_BASE}/workOrders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newOrder),
