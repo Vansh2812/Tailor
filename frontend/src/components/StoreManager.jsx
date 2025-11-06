@@ -20,8 +20,8 @@ export default function StoreManager() {
 
   const API_URL =
     import.meta.env.VITE_API_BASE
-      ? `${import.meta.env.VITE_API_BASE}/api/stores`
-      : '/api/stores';
+      ? `${import.meta.env.VITE_API_BASE}/stores`
+      : '/stores';
 
   // Fetch stores from backend
   const fetchStores = async () => {
