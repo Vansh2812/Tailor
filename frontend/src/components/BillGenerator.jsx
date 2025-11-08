@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download, Calendar } from "lucide-react";
+import { FileText, Download, Calendar, Shirt } from "lucide-react";
 import * as XLSX from "xlsx/xlsx.mjs";
 import logo from "../logo/Patel Tailor.jpg";
 import qrImage from "../logo/AryanPhonePeQR.jpg";
@@ -39,7 +39,7 @@ export default function BillGenerator() {
     ? `${import.meta.env.VITE_API_BASE}`
     : "/stores";
 
-  // Fetch stores and work orders
+  // ✅ Fetch stores and work orders
   useEffect(() => {
     fetch(`${API_BASE}/stores`)
       .then((res) => res.json())
@@ -52,7 +52,7 @@ export default function BillGenerator() {
       .catch((err) => console.error("Error fetching work orders:", err));
   }, [API_BASE]);
 
-  // Generate Bill Data
+  // ✅ Generate Bill Data
   const generateBill = () => {
     if (!selectedStoreId || !startDate || !endDate) return;
 
@@ -79,146 +79,35 @@ export default function BillGenerator() {
     });
   };
 
-  // Download PDF
+  // ✅ Download PDF (includes Clothes Name)
   const downloadPDF = async () => {
     if (!billData) return;
 
-  const html2pdf = (await import("html2pdf.js")).default;
+    const html2pdf = (await import("html2pdf.js")).default;
 
     const htmlContent = `
       <html>
         <head>
           <title>${t("billGenerator.billReport")} - ${billData.storeName}</title>
           <style>
-            /* --- Updated Styles for a Professional Look --- */
-            body { 
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-                margin: 0; /* Use 0 margin for clean PDF generation */
-                padding: 40px; 
-                color: #333; 
-                font-size: 10pt; /* Slightly smaller base font */
-            }
-            .invoice-container { 
-                padding: 20px; 
-                border: 1px solid #ccc; 
-                border-radius: 8px; /* Slight rounding on the container */
-            }
-            .header { 
-                display: flex; /* Flexbox for logo and text alignment */
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 30px; 
-                padding-bottom: 15px;
-                border-bottom: 3px solid #007bff; /* Primary color separator */
-            }
-            .header-text {
-                text-align: right;
-            }
-            .logo { 
-                width: 70px; 
-                height: 70px; 
-                object-fit: cover; 
-                border-radius: 50%; /* Make logo round for modern look */
-                vertical-align: middle;
-            }
-            .title { 
-                font-size: 20pt; 
-                font-weight: bold; 
-                margin-top: 5px; 
-                color: #007bff; /* Primary color for title */
-                display: inline-block;
-                margin-left: 15px;
-            }
-            .store-name { 
-                font-size: 14pt; 
-                color: #555; 
-                font-weight: 600;
-            }
-            .period { 
-                color: #777; 
-                margin-bottom: 10px; 
-                font-size: 10pt;
-            }
-            .summary { 
-                background: #e9f7ff; /* Light blue background for summary */
-                border: 1px solid #b3e0ff; /* Light blue border */
-                padding: 15px; 
-                margin-bottom: 25px; 
-                border-radius: 6px; 
-            }
-            .summary h3 { 
-                margin: 0 0 10px 0; 
-                font-size: 12pt; 
-                color: #0056b3; /* Darker blue for heading */
-                border-bottom: 1px solid #b3e0ff;
-                padding-bottom: 5px;
-            }
-            .summary p { 
-                margin: 5px 0;
-            }
-            
-            table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                font-size: 10pt; 
-                margin-bottom: 35px; 
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Subtle shadow for table */
-            }
-            th, td { 
-                border: none; /* Remove default border */
-                padding: 12px 10px; 
-                text-align: left; 
-            }
-            th { 
-                background-color: #007bff; /* Primary color header */
-                color: white; 
-                font-weight: 600;
-                border-bottom: 3px solid #0056b3;
-                text-transform: uppercase;
-            }
-            tr:nth-child(even) { 
-                background-color: #f7f7f7; /* Light gray stripe */
-            }
-            tr:last-child td {
-                border-bottom: 1px solid #ccc;
-            }
-            .total-row td { 
-                font-weight: bold; 
-                background-color: #d4edda; /* Light green total row */
-                color: #155724; /* Dark green text */
-                border-top: 2px solid #c3e6cb;
-                font-size: 11pt;
-            }
-            
-            .qr-section { 
-                text-align: right; /* Align QR section to the right */
-                margin-top: 30px; 
-                padding-top: 20px;
-                border-top: 1px dashed #ccc;
-            }
-            .qr-section img { 
-                width: 120px; /* Reduced QR size */
-                height: 120px; 
-                border: 1px solid #ddd;
-                padding: 5px;
-                border-radius: 4px; 
-                margin-top: 10px; 
-            }
-            .qr-section p { 
-                font-size: 10pt; 
-                color: #444; 
-                margin: 3px 0; 
-            }
-            
-            footer { 
-                clear: both;
-                text-align: center; 
-                margin-top: 50px; 
-                font-size: 9pt; 
-                color: #888; 
-                padding-top: 10px;
-                border-top: 1px solid #eee;
-            }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 40px; color: #333; font-size: 10pt; }
+            .invoice-container { padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 3px solid #007bff; }
+            .header-text { text-align: right; }
+            .logo { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; }
+            .title { font-size: 20pt; font-weight: bold; margin-top: 5px; color: #007bff; }
+            .store-name { font-size: 14pt; color: #555; font-weight: 600; }
+            .period { color: #777; font-size: 10pt; }
+            .summary { background: #e9f7ff; border: 1px solid #b3e0ff; padding: 15px; margin-bottom: 25px; border-radius: 6px; }
+            .summary h3 { margin: 0 0 10px 0; font-size: 12pt; color: #0056b3; border-bottom: 1px solid #b3e0ff; padding-bottom: 5px; }
+            table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 35px; }
+            th, td { padding: 12px 10px; text-align: left; }
+            th { background-color: #007bff; color: white; text-transform: uppercase; }
+            tr:nth-child(even) { background-color: #f7f7f7; }
+            .total-row td { font-weight: bold; background-color: #d4edda; color: #155724; border-top: 2px solid #c3e6cb; font-size: 11pt; }
+            .qr-section { text-align: right; margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 20px; }
+            .qr-section img { width: 120px; height: 120px; border: 1px solid #ddd; padding: 5px; border-radius: 4px; margin-top: 10px; }
+            footer { text-align: center; margin-top: 50px; font-size: 9pt; color: #888; border-top: 1px solid #eee; padding-top: 10px; }
           </style>
         </head>
         <body>
@@ -241,6 +130,7 @@ export default function BillGenerator() {
                 <tr>
                   <th>${t("billGenerator.date")}</th>
                   <th>${t("billGenerator.customer")}</th>
+                  <th>Clothes Name</th>
                   <th>${t("billGenerator.works")}</th>
                   <th style="text-align: right;">${t("billGenerator.amount")}</th>
                 </tr>
@@ -252,22 +142,23 @@ export default function BillGenerator() {
                     <tr>
                       <td>${new Date(order.date).toLocaleDateString()}</td>
                       <td>${order.customerName}</td>
+                      <td>${order.clothesName || "-"}</td>
                       <td>${order.repairWorks.map((rw) => rw.name).join(", ")}</td>
                       <td style="text-align: right;">₹${order.totalAmount}</td>
                     </tr>`
                   )
                   .join("")}
                 <tr class="total-row">
-                  <td colspan="3">${t("billGenerator.total")}</td>
+                  <td colspan="4">${t("billGenerator.total")}</td>
                   <td style="text-align: right;">₹${billData.totalAmount}</td>
                 </tr>
               </tbody>
             </table>
             <div class="qr-section">
-              <p>Scan to Pay using GooglePay / UPI</p>
-              <img src="${qrImage}" alt="PhonePe QR Code" />
+              <p>Scan to Pay via UPI</p>
+              <img src="${qrImage}" alt="QR" />
               <p><strong>Aryan Patel</strong></p>
-              <p>UPI ID: pa9221169@okhdfcbank</p>
+              <p>UPI: pa9221169@okhdfcbank</p>
             </div>
             <footer>Generated by Patel Tailor System</footer>
           </div>
@@ -279,7 +170,6 @@ export default function BillGenerator() {
     element.innerHTML = htmlContent;
     document.body.appendChild(element);
 
-    // Note: I've updated the selector here to target the invoice-container for a cleaner PDF border.
     const opt = {
       margin: 0.4,
       filename: `Bill_${billData.storeName}_${startDate}_to_${endDate}.pdf`,
@@ -291,14 +181,13 @@ export default function BillGenerator() {
     setTimeout(() => {
       html2pdf()
         .set(opt)
-        .from(element.querySelector('.invoice-container')) // Target the new container class
+        .from(element.querySelector(".invoice-container"))
         .save()
         .then(() => document.body.removeChild(element));
     }, 500);
   };
 
-  
-  // Download Excel
+  // ✅ Download Excel (includes Clothes Name)
   const downloadExcel = () => {
     if (!billData) return;
 
@@ -307,13 +196,14 @@ export default function BillGenerator() {
       [`${t("billGenerator.store")}: ${billData.storeName}`],
       [`${t("billGenerator.period")}: ${billData.dateRange}`],
       [`${t("billGenerator.totalOrders")}: ${billData.totalOrders}`],
-      [`${t("billGenerator.totalRevenue")}: Rs${billData.totalAmount}`],
-      ["", "", "", ""],
+      [`${t("billGenerator.totalRevenue")}: ₹${billData.totalAmount}`],
+      [""],
     ];
 
     const header = [
       t("billGenerator.date"),
       t("billGenerator.customer"),
+      "Clothes Name",
       t("billGenerator.works"),
       t("billGenerator.amount"),
     ];
@@ -321,16 +211,17 @@ export default function BillGenerator() {
     const tableData = billData.orders.map((order) => [
       new Date(order.date).toLocaleDateString(),
       order.customerName,
+      order.clothesName || "-",
       order.repairWorks.map((rw) => rw.name).join("; "),
       order.totalAmount,
     ]);
 
-    const totalRow = ["", "", t("billGenerator.total"), billData.totalAmount];
+    const totalRow = ["", "", "", t("billGenerator.total"), billData.totalAmount];
     const data = [...summaryData, header, ...tableData, totalRow];
 
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    ws["!cols"] = [{ wch: 15 }, { wch: 30 }, { wch: 45 }, { wch: 15 }];
+    ws["!cols"] = [{ wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 40 }, { wch: 15 }];
     XLSX.utils.book_append_sheet(wb, ws, "Bill Report");
     XLSX.writeFile(wb, `bill_${billData.storeName}_${startDate}_to_${endDate}.xlsx`);
   };
@@ -342,6 +233,7 @@ export default function BillGenerator() {
         <p className="text-gray-600">{t("billGenerator.description")}</p>
       </div>
 
+      {/* ✅ Bill Form */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -352,7 +244,7 @@ export default function BillGenerator() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="store">{t("billGenerator.selectStore")}</Label>
+              <Label>{t("billGenerator.selectStore")}</Label>
               <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
                 <SelectTrigger>
                   <SelectValue placeholder={t("billGenerator.chooseStore")} />
@@ -368,9 +260,8 @@ export default function BillGenerator() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="startDate">{t("billGenerator.startDate")}</Label>
+              <Label>{t("billGenerator.startDate")}</Label>
               <Input
-                id="startDate"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -378,9 +269,8 @@ export default function BillGenerator() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">{t("billGenerator.endDate")}</Label>
+              <Label>{t("billGenerator.endDate")}</Label>
               <Input
-                id="endDate"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
@@ -392,7 +282,6 @@ export default function BillGenerator() {
             <Button
               onClick={generateBill}
               disabled={!selectedStoreId || !startDate || !endDate}
-              className="w-full md:w-auto"
             >
               <Calendar className="w-4 h-4 mr-2" />
               {t("billGenerator.generateBill")}
@@ -401,6 +290,7 @@ export default function BillGenerator() {
         </CardContent>
       </Card>
 
+      {/* ✅ Bill Data Table */}
       {billData && (
         <Card>
           <CardHeader>
@@ -410,10 +300,10 @@ export default function BillGenerator() {
               </CardTitle>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={downloadPDF}>
-                  <Download className="w-4 h-4 mr-2" /> {t("billGenerator.pdf")}
+                  <Download className="w-4 h-4 mr-2" /> PDF
                 </Button>
                 <Button variant="outline" onClick={downloadExcel}>
-                  <Download className="w-4 h-4 mr-2" /> {t("billGenerator.excel")}
+                  <Download className="w-4 h-4 mr-2" /> Excel
                 </Button>
               </div>
             </div>
@@ -427,8 +317,11 @@ export default function BillGenerator() {
                   <TableRow>
                     <TableHead>{t("billGenerator.date")}</TableHead>
                     <TableHead>{t("billGenerator.customer")}</TableHead>
+                    <TableHead>Clothes Name</TableHead>
                     <TableHead>{t("billGenerator.works")}</TableHead>
-                    <TableHead className="text-right">{t("billGenerator.amount")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("billGenerator.amount")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -436,15 +329,22 @@ export default function BillGenerator() {
                     <TableRow key={index}>
                       <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                       <TableCell>{order.customerName}</TableCell>
-                      <TableCell>{order.repairWorks.map((rw) => rw.name).join(", ")}</TableCell>
-                      <TableCell className="text-right">{order.totalAmount}</TableCell>
+                      <TableCell>{order.clothesName || "-"}</TableCell>
+                      <TableCell>
+                        {order.repairWorks.map((rw) => rw.name).join(", ")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ₹{order.totalAmount}
+                      </TableCell>
                     </TableRow>
                   ))}
                   <TableRow>
-                    <TableCell colSpan={3}>
+                    <TableCell colSpan={4}>
                       <Badge>{t("billGenerator.total")}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">{billData.totalAmount}</TableCell>
+                    <TableCell className="text-right">
+                      ₹{billData.totalAmount}
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
