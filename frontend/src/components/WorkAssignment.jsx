@@ -7,9 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Calendar, User, Store } from 'lucide-react';
+import { Plus, X, Calendar, User, Store, Shirt } from 'lucide-react';
 
-// ✅ Secure environment variable for API base
+// ✅ API Base
 const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export default function WorkAssignment() {
@@ -21,6 +21,7 @@ export default function WorkAssignment() {
   const [selectedRepairWorks, setSelectedRepairWorks] = useState([]);
   const [customerName, setCustomerName] = useState('');
   const [selectedStoreId, setSelectedStoreId] = useState('');
+  const [clothesName, setClothesName] = useState(''); // ✅ New state for clothes name
 
   // ✅ Fetch data from backend
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function WorkAssignment() {
     fetchData();
   }, []);
 
-  // Add repair work to selected list
+  // ✅ Add repair work to selected list
   const addRepairWork = (repairWorkId) => {
     const repairWork = repairWorks.find((rw) => rw._id === repairWorkId);
     if (repairWork && !selectedRepairWorks.find((srw) => srw._id === repairWorkId)) {
@@ -55,25 +56,33 @@ export default function WorkAssignment() {
     }
   };
 
-  // Remove repair work from selected list
+  // ✅ Remove repair work
   const removeRepairWork = (repairWorkId) => {
     setSelectedRepairWorks(selectedRepairWorks.filter((rw) => rw._id !== repairWorkId));
   };
 
-  // Calculate total price
-  const calculateTotal = () => selectedRepairWorks.reduce((total, rw) => total + rw.price, 0);
+  // ✅ Calculate total
+  const calculateTotal = () =>
+    selectedRepairWorks.reduce((total, rw) => total + rw.price, 0);
 
-  // Submit new work order
+  // ✅ Submit new order
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!customerName.trim() || !selectedStoreId || selectedRepairWorks.length === 0) return;
+    if (
+      !customerName.trim() ||
+      !selectedStoreId ||
+      !clothesName.trim() ||
+      selectedRepairWorks.length === 0
+    )
+      return;
 
     const selectedStore = stores.find((s) => s._id === selectedStoreId);
     if (!selectedStore) return;
 
     const newOrder = {
       customerName: customerName.trim(),
+      clothesName: clothesName.trim(), // ✅ New field
       storeId: selectedStoreId,
       storeName: selectedStore.name,
       repairWorks: selectedRepairWorks.map((rw) => ({
@@ -94,10 +103,11 @@ export default function WorkAssignment() {
       const savedOrder = await res.json();
       setWorkOrders([savedOrder, ...workOrders]);
 
-      // Reset form
+      // ✅ Reset form
       setCustomerName('');
       setSelectedStoreId('');
       setSelectedRepairWorks([]);
+      setClothesName('');
     } catch (err) {
       console.error('Error saving order:', err);
     }
@@ -112,13 +122,14 @@ export default function WorkAssignment() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Order Form */}
+        {/* ✅ Order Form */}
         <Card>
           <CardHeader>
             <CardTitle>{t('newOrder')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Customer Name */}
               <div className="space-y-2">
                 <Label htmlFor="customerName">{t('customerName')}</Label>
                 <Input
@@ -130,9 +141,26 @@ export default function WorkAssignment() {
                 />
               </div>
 
+              {/* ✅ Clothes Name */}
+              <div className="space-y-2">
+                <Label htmlFor="clothesName">Clothes Name</Label>
+                <Input
+                  id="clothesName"
+                  placeholder="Enter clothes name (e.g., Shirt, Pant)"
+                  value={clothesName}
+                  onChange={(e) => setClothesName(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Store Selection */}
               <div className="space-y-2">
                 <Label htmlFor="store">{t('selectStore')}</Label>
-                <Select value={selectedStoreId} onValueChange={setSelectedStoreId} required>
+                <Select
+                  value={selectedStoreId}
+                  onValueChange={setSelectedStoreId}
+                  required
+                >
                   <SelectTrigger>
                     <SelectValue placeholder={t('chooseStore')} />
                   </SelectTrigger>
@@ -146,6 +174,7 @@ export default function WorkAssignment() {
                 </Select>
               </div>
 
+              {/* Repair Works */}
               <div className="space-y-2">
                 <Label>{t('addRepairWorks')}</Label>
                 <Select onValueChange={addRepairWork}>
@@ -162,13 +191,19 @@ export default function WorkAssignment() {
                 </Select>
               </div>
 
+              {/* Selected Works */}
               {selectedRepairWorks.length > 0 && (
                 <div className="space-y-2">
                   <Label>{t('selectedWorks')}</Label>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {selectedRepairWorks.map((work) => (
-                      <div key={work._id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                        <span className="text-sm">{work.name} - ₹{work.price}</span>
+                      <div
+                        key={work._id}
+                        className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                      >
+                        <span className="text-sm">
+                          {work.name} - ₹{work.price}
+                        </span>
                         <Button
                           type="button"
                           size="sm"
@@ -189,7 +224,12 @@ export default function WorkAssignment() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={!customerName.trim() || !selectedStoreId || selectedRepairWorks.length === 0}
+                disabled={
+                  !customerName.trim() ||
+                  !selectedStoreId ||
+                  !clothesName.trim() ||
+                  selectedRepairWorks.length === 0
+                }
               >
                 {t('createOrder')}
               </Button>
@@ -197,7 +237,7 @@ export default function WorkAssignment() {
           </CardContent>
         </Card>
 
-        {/* Recent Orders */}
+        {/* ✅ Recent Orders */}
         <Card>
           <CardHeader>
             <CardTitle>{t('recentOrders')}</CardTitle>
@@ -217,6 +257,12 @@ export default function WorkAssignment() {
                         <span className="font-medium">{order.customerName}</span>
                       </div>
                       <Badge>₹{order.totalAmount}</Badge>
+                    </div>
+
+                    {/* ✅ Clothes Name Display */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Shirt className="w-4 h-4" />
+                      <span>{order.clothesName}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -240,7 +286,7 @@ export default function WorkAssignment() {
         </Card>
       </div>
 
-      {/* All Orders Table */}
+      {/* ✅ All Orders Table */}
       <Card>
         <CardHeader>
           <CardTitle>{t('allOrders')}</CardTitle>
@@ -255,6 +301,7 @@ export default function WorkAssignment() {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t('customer')}</TableHead>
+                  <TableHead>Clothes Name</TableHead> {/* ✅ New Column */}
                   <TableHead>{t('store')}</TableHead>
                   <TableHead>{t('works')}</TableHead>
                   <TableHead>{t('date')}</TableHead>
@@ -265,9 +312,12 @@ export default function WorkAssignment() {
                 {workOrders.map((order) => (
                   <TableRow key={order._id}>
                     <TableCell className="font-medium">{order.customerName}</TableCell>
+                    <TableCell>{order.clothesName}</TableCell> {/* ✅ Display Clothes */}
                     <TableCell>{order.storeName}</TableCell>
                     <TableCell>
-                      <div className="text-sm">{order.repairWorks.map((rw) => rw.name).join(', ')}</div>
+                      <div className="text-sm">
+                        {order.repairWorks.map((rw) => rw.name).join(', ')}
+                      </div>
                     </TableCell>
                     <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
